@@ -4,7 +4,7 @@ import os
 import sys
 from moneyed import Money, GBP
 from datetime import date
-from app.commandhandler import CommandHandler
+from gnucashcategorizer.commandhandler import CommandHandler
 
 
 class TestCommandHandler(TestCase):
