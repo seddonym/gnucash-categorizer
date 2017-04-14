@@ -112,9 +112,17 @@ class TestCommandHandler(TestCase):
     def test_save_suggestions(self):
         assert False
     
-    @skip
     def test_get_matcher(self):
-        assert False
+        book = Mock()
+        config = Mock()
+        with patch('gnucashcategorizer.commandhandler.Matcher') as mock_matcher_cls:
+            with patch.object(self.command_handler, 'get_book', return_value=book):
+                with patch.object(self.command_handler, 'get_config', return_value=config):
+                    matcher = self.command_handler.get_matcher()
+        
+        assert matcher == mock_matcher_cls.return_value
+        mock_matcher_cls.assert_called_once_with(config=config, book=book)
+
     
     @skip
     def test_get_config(self):
