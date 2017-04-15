@@ -15,20 +15,56 @@ set_money_format('en_GB', group_size=3, group_separator=",", decimal_point=".",
 set_currency_sign('en_GB', GBP, prefix='£')
 
 
+class CommandOptions:
+    """The options supplied by the user for running the categorizer.
+
+    Args:
+        config_filename: The filename and path to the config yaml file (string).
+        book_filename: The filename and path to the Gnucash accounts file (string).
+    """
+    def __init__(self, config_filename, book_filename):
+        self._config_filename = config_filename
+        self._book_filename = book_filename
+
+    def get_config(self):
+        """Gets the Config object from the config filename.
+
+        Returns:
+            Config object.
+        """
+        return Config(filename=self._config_filename)
+
+    def get_book(self):
+        """Gets the Book object from the book filename.
+
+        Returns:
+            Book object.
+        """
+        return Book(filename=self._book_filename)
+
+
 class CommandHandler:
     """Handles the user flow and display.
+
+    Usage:
+
+        CommandHandler().run()
     """
     def run(self):
-        self.store_user_input()
-        self.preview_suggestions()
-        if self.user_confirms():
-            self.save_suggestions()
+        """Main runner for the program.
+        """
+        options = self._parse_options_from_command_line()
+        suggestions = self._get_and_preview_suggestions(options)
+        if self._user_accepts_suggestions():
+            self._save_suggestions(suggestions)
         else:
-            self.print_message('Aborted.')
+            self._print_message('Aborted.')
 
-    def store_user_input(self):
-        """Gets the config and book filenames from the command line, and stores them as
-        attributes on this instance.
+    def _parse_options_from_command_line(self):
+        """Gets the config and book filenames from the command line.
+
+        Returns:
+            CommandOptions instance.
         """
         parser = ArgumentParser()
         parser.add_argument(
@@ -40,30 +76,53 @@ class CommandHandler:
 
         args = parser.parse_args()
 
-        self.config_filename = args.config
-        self.book_filename = args.accounts
+        return CommandOptions(config_filename=args.config, book_filename=args.accounts)
 
-    def preview_suggestions(self):
-        self.suggestions = self.get_suggestions()
-        self.render_suggestions()
+    def _get_and_preview_suggestions(self, options):
+        """Gets and previews the suggested changes to make to the transactions.
 
-    def get_suggestions(self):
-        return self.get_matcher().get_suggestions()
+        Args:
+            options: CommandOptions object.
 
-    def get_matcher(self):
-        return Matcher(config=self.get_config(),
-                       book=self.get_book())
+        Returns:
+            suggestions: List of Suggestions.
+        """
+        suggestions = self._get_suggestions(options)
+        self._render_suggestions(suggestions)
+        return suggestions
 
-    def get_config(self):
-        return Config(filename=self.config_filename)
+    def _get_suggestions(self, options):
+        """Gets the suggested changes to make to the transactions.
 
-    def get_book(self):
-        return Book(filename=self.book_filename)
+        Args:
+            options: CommandOptions object.
 
-    def render_suggestions(self):
-        self.print_message('Suggestions for unresolved transactions:')
-        self.print_message('Date\tDescription\tAmount\tDebit\tCredit')
-        for suggestion in self.suggestions:
+        Returns:
+            List of Suggestions.
+        """
+        return self._get_matcher(options).get_suggestions()
+
+    def _get_matcher(self, options):
+        """Gets a Matcher object to use to get the suggestions.
+
+        Args:
+            options: CommandOptions object.
+
+        Returns:
+            Matcher object.
+        """
+        return Matcher(config=options.get_config(),
+                       book=options.get_book())
+
+    def _render_suggestions(self, suggestions):
+        """Outputs the suggestions for the user to review.
+
+        Args:
+            suggestions: List of suggestions.
+        """
+        self._print_message('Suggestions for unresolved transactions:')
+        self._print_message('Date\tDescription\tAmount\tDebit\tCredit')
+        for suggestion in suggestions:
             parts = [str(part) for part in (
                 suggestion.date.strftime('%d/%m/%Y'),
                 suggestion.description,
@@ -71,12 +130,22 @@ class CommandHandler:
                 suggestion.debit_account,
                 suggestion.credit_account,
             )]
-            self.print_message('\t'.join(parts))
+            self._print_message('\t'.join(parts))
 
-    def save_suggestions(self):
-        self.print_message('Saved.')
+    def _save_suggestions(self, suggestions):
+        """Saves the list of suggestions to the accounts book.
 
-    def user_confirms(self):
+        Args:
+            suggestions: List of suggestions.
+        """
+        self._print_message('Saved.')
+
+    def _user_accepts_suggestions(self):
+        """Asks the user whether or not they accept the suggestions.
+
+        Returns:
+            Whether they accept the suggestions (boolean).
+        """
         YES, NO = 'y', 'n'
 
         while True:
@@ -84,9 +153,14 @@ class CommandHandler:
             if user_input in [YES, NO]:
                 break
             else:
-                self.print_message('Please enter {} or {}.'.format(YES, NO))
+                self._print_message('Please enter {} or {}.'.format(YES, NO))
 
         return user_input == YES
 
-    def print_message(self, message):
+    def _print_message(self, message):
+        """Outputs the given message to the user.
+
+        Args:
+            message: Message to output (string).
+        """
         print(message)
