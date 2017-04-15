@@ -1,7 +1,8 @@
 import piecash
 
+
 class Transaction:
-    #def __init__(self, piecash_transaction):
+    # def __init__(self, piecash_transaction):
     #    self._piecash_transaction = piecash_transaction
     # TODO - use a piecash transaction instead
     def __init__(self, date, description, amount):
@@ -15,7 +16,7 @@ class Book:
     """
     def __init__(self, filename):
         self._load_from_file(filename)
- 
+
     def _load_from_file(self, filename):
         """Opens and initializes the Gnucash file.
         """

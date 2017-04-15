@@ -12,8 +12,7 @@ with open('LICENSE') as f:
 setup(
     name='gnucash-categorizer',
     version='0.1.0',
-    description='Tool for moving uncategorized Gnucash transactions into '
-        'the correct accounts',
+    description='Tool for moving uncategorized Gnucash transactions into the correct accounts.',
     long_description=readme,
     author='David Seddon',
     author_email='david@seddonym.me',

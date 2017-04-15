@@ -16,11 +16,11 @@ class Suggestion:
     @property
     def description(self):
         return self.transaction.description
-    
+
     @property
     def amount(self):
         return self.transaction.amount
-    
+
 
 class Matcher:
     def __init__(self, config, book):
