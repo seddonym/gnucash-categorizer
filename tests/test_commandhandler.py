@@ -12,7 +12,7 @@ class TestCommandHandler(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.command_handler = CommandHandler()
-        
+    
     def test_success(self):
         """Test a successful run of the entire command.
         """
