@@ -4,7 +4,7 @@ from moneyed.localization import (format_money, _format as set_money_format,
                                   _sign as set_currency_sign)
 from .config import Config
 from .book import Book
-from .matcher import Matcher
+from gnucashcategorizer.suggester import Suggester
 from decimal import ROUND_HALF_UP
 
 
@@ -100,18 +100,18 @@ class CommandHandler:
         Returns:
             List of Suggestions.
         """
-        return self._get_matcher(options).get_suggestions()
+        return self._get_suggester(options).get_suggestions()
 
-    def _get_matcher(self, options):
-        """Gets a Matcher object to use to get the suggestions.
+    def _get_suggester(self, options):
+        """Gets a Suggester object to use to get the suggestions.
 
         Args:
             options: CommandOptions object.
 
         Returns:
-            Matcher object.
+            Suggester object.
         """
-        return Matcher(config=options.get_config(),
+        return Suggester(config=options.get_config(),
                        book=options.get_book())
 
     def _render_suggestions(self, suggestions):

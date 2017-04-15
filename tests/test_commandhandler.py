@@ -74,12 +74,12 @@ class TestCommandHandler(TestCase):
                                                      book_filename=BOOK_FILENAME)
 
     def test_get_suggestions(self):
-        matcher = Mock()
-        with patch.object(self.command_handler, '_get_matcher', return_value=matcher) as mock_get_matcher:
+        suggester = Mock()
+        with patch.object(self.command_handler, '_get_suggester', return_value=suggester) as mock_get_suggester:
             suggestions = self.command_handler._get_suggestions(sentinel.options)
 
-            assert suggestions == matcher.get_suggestions()
-            mock_get_matcher.assert_called_once_with(sentinel.options)
+            assert suggestions == suggester.get_suggestions()
+            mock_get_suggester.assert_called_once_with(sentinel.options)
 
     def test_get_and_preview_suggestions(self):
         with patch.object(self.command_handler, '_get_suggestions',
@@ -120,14 +120,14 @@ class TestCommandHandler(TestCase):
 
             mock_print.assert_called_once_with('Saved.')
 
-    def test_get_matcher(self):
+    def test_get_suggester(self):
         options = Mock()
 
-        with patch('gnucashcategorizer.commandhandler.Matcher') as mock_matcher_cls:
-            matcher = self.command_handler._get_matcher(options)
+        with patch('gnucashcategorizer.commandhandler.Suggester') as mock_suggester_cls:
+            suggester = self.command_handler._get_suggester(options)
 
-        assert matcher == mock_matcher_cls.return_value
-        mock_matcher_cls.assert_called_once_with(config=options.get_config(), book=options.get_book())
+        assert suggester == mock_suggester_cls.return_value
+        mock_suggester_cls.assert_called_once_with(config=options.get_config(), book=options.get_book())
 
     def test_user_accepts_suggestions_returns_true_when_they_enter_yes(self):
         YES = 'y'

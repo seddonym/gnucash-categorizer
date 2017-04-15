@@ -2,13 +2,12 @@ import piecash
 
 
 class Transaction:
-    # def __init__(self, piecash_transaction):
-    #    self._piecash_transaction = piecash_transaction
-    # TODO - use a piecash transaction instead
-    def __init__(self, date, description, amount):
+    def __init__(self, date, description, amount, credit_account, debit_account):
         self.date = date
         self.description = description
         self.amount = amount
+        self.credit_account = credit_account
+        self.debit_account = debit_account
 
 
 class Book:
