@@ -25,6 +25,17 @@ class MatchPattern:
         """
         return fnmatch(description, self.pattern)
 
+    def __eq__(self, other):
+        return hash(self) == hash(other)
+
+    def __hash__(self):
+        hashable = (self.pattern, self.account)
+        return hash(hashable)
+
+    def __repr__(self):
+        return "{cls}(pattern='{pattern}', account='{account}')".format(cls=self.__class__.__name__,
+                                                                        pattern=self.pattern,
+                                                                        account=self.account)
 
 class Config:
     """Reads and stores configuration from a YAML file.
@@ -39,9 +50,23 @@ class Config:
             yaml_string = config_file.read()
             self._config_dict = yaml.load(yaml_string)
 
-    def get_uncategorized_account_names(self):
+    def get_unresolved_account_names(self):
         """
         Returns:
             List of account names (strings).
         """
-        return []
+        return self._config_dict['unresolved_accounts']
+
+    def get_patterns(self):
+        """
+        Returns:
+            List of MatchPatterns.
+        """
+        match_patterns = []
+        for match_dict in self._config_dict['matches']:
+            assert len(match_dict.keys()) == 1, "Unexpected format."
+            account_name = list(match_dict.keys())[0]
+            for match in match_dict[account_name]:
+                match_pattern = MatchPattern(pattern=match, account=account_name)
+                match_patterns.append(match_pattern)
+        return match_patterns
