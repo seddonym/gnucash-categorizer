@@ -29,6 +29,11 @@ class Suggestion:
         hashable = (self.transaction, self.debit_account, self.credit_account)
         return hash(hashable)
 
+    def __repr__(self):
+        return "{cls}({transaction}, credit_account='{credit_account}')".format(
+                                                                cls=self.__class__.__name__,
+                                                                transaction=self.transaction,
+                                                                credit_account=self.credit_account)
 
 class Suggester:
     """Provides a list of Suggestions for unmatched transactions.

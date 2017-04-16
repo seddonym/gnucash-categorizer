@@ -1,5 +1,5 @@
 from unittest import TestCase
-from unittest.mock import Mock, patch, call, sentinel
+from unittest.mock import Mock, patch
 from moneyed import Money, GBP
 from datetime import date
 from gnucashcategorizer.book import Transaction
@@ -43,6 +43,22 @@ class TestSuggester(TestCase):
 
 
 class TestSuggestion(TestCase):
+    def test_str(self):
+        transaction = Transaction(
+            date=date(2017, 3, 1),
+            amount=Money(135, GBP),
+            description='Foo',
+            debit_account='Bar',
+            credit_account='Baz'
+        )
+        credit_account = 'Foobaz'
+        suggestion = Suggestion(
+            transaction=transaction,
+            credit_account=credit_account
+        )
+        with patch.object(Transaction, '__str__', return_value='foo transaction'):
+            assert repr(suggestion) == "Suggestion(foo transaction, credit_account='Foobaz')"
+
     def test_suggestions_are_equal_if_same_data(self):
         transaction = Transaction(
             date=date(2017, 3, 1),

@@ -1,4 +1,5 @@
 import yaml
+from fnmatch import fnmatch
 
 
 class MatchPattern:
@@ -22,7 +23,7 @@ class MatchPattern:
         Returns:
             Whether the supplied description matches the pattern.
         """
-        return True
+        return fnmatch(description, self.pattern)
 
 
 class Config:

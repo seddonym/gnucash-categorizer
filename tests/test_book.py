@@ -7,7 +7,7 @@ from gnucashcategorizer.book import Transaction
 class TestTransaction(TestCase):
     def test_transaction(self):
         kwargs = dict(
-            transaction_date=date(2017, 3, 1),
+            date=date(2017, 3, 1),
             debit_account='Assets.Foo',
             credit_account='Expenses.Bar',
             description='Foo description',
