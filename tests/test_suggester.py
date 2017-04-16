@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import Mock, patch, sentinel, call
 from gnucashcategorizer.book import Account, Split
-from gnucashcategorizer.suggester import Suggester, Suggestion
+from gnucashcategorizer.suggester import Suggester, Suggestion, NoSuggestion
 
 
 class TestSuggester(TestCase):
@@ -27,6 +27,47 @@ class TestSuggester(TestCase):
             call(sentinel.split_2),
             call(sentinel.split_3),
         ])
+
+    def test_get_uncategorized_accounts(self):
+        book = Mock()
+        book.get_accounts.return_value = sentinel.accounts
+        config = Mock()
+        config.get_uncategorized_account_names.return_value = ['Foo', 'Bar']
+        suggester = Suggester(book=book, config=config)
+
+        result = suggester._get_uncategorized_accounts()
+        assert result == sentinel.accounts
+
+    def test_get_suggestion_for_split_second_pattern_matches(self):
+        config = Mock()
+        pattern_1 = Mock()
+        pattern_1.is_match.return_value = False
+        pattern_2 = Mock()
+        pattern_2.is_match.return_value = True
+        config.get_patterns.return_value = [pattern_1, pattern_2]
+        split = Mock()
+
+        suggester = Suggester(book=Mock(), config=config)
+        result = suggester._get_suggestion_for_split(split)
+
+        assert result == Suggestion(split, new_account=pattern_2.account)
+        pattern_2.is_match.assert_called_once_with(split.description)
+
+    def test_get_suggestion_for_split_raises_no_suggestion_found_if_no_match(self):
+        config = Mock()
+        pattern_1 = Mock()
+        pattern_1.is_match.return_value = False
+        pattern_2 = Mock()
+        pattern_2.is_match.return_value = False
+        config.get_patterns.return_value = [pattern_1, pattern_2]
+
+        suggester = Suggester(book=Mock(), config=config)
+        try:
+            suggester._get_suggestion_for_split(Mock())
+        except NoSuggestion:
+            assert True
+        else:
+            assert False
 
 
 class TestSuggestion(TestCase):
@@ -54,3 +95,18 @@ class TestSuggestion(TestCase):
             new_account=account
         )
         assert suggestion_a == suggestion_b
+
+    def test_date(self):
+        suggestion = Suggestion(split=Mock(date=sentinel.date),
+                                new_account=Mock())
+        assert suggestion.date == sentinel.date
+
+    def test_description(self):
+        suggestion = Suggestion(split=Mock(description=sentinel.description),
+                                new_account=Mock())
+        assert suggestion.description == sentinel.description
+
+    def test_amount(self):
+        suggestion = Suggestion(split=Mock(amount=sentinel.amount),
+                                new_account=Mock())
+        assert suggestion.amount == sentinel.amount
