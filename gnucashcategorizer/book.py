@@ -35,8 +35,6 @@ class Book:
         """Opens and initializes the Gnucash file.
         """
         self._piecash_book = piecash.open_book(filename, readonly=False)
-        import ipdb; ipdb.set_trace()
-        pass
 
     def get_accounts(self, account_names):
         for name in account_names:
