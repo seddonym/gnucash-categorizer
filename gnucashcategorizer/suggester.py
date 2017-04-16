@@ -3,37 +3,43 @@ from moneyed import Money, GBP
 from .book import Transaction
 
 
+class NoSuggestion(Exception):
+    """Exception raised when no suggestion could be made.
+    """
+    def __init__(self, split):
+        self._split = split
+
+
 class Suggestion:
-    def __init__(self, transaction, debit_account=None, credit_account=None):
-        self.transaction = transaction
-        self.debit_account = debit_account
-        self.credit_account = credit_account
+    def __init__(self, split, new_account):
+        self.split = split
+        self.new_account = new_account
 
     @property
     def date(self):
-        return self.transaction.date
+        return self.split.date
 
     @property
     def description(self):
-        return self.transaction.description
+        return self.split.description
 
     @property
     def amount(self):
-        return self.transaction.amount
+        return self.split.amount
 
     def __eq__(self, other):
         return hash(self) == hash(other)
 
     def __hash__(self):
         # Hash is useful for establishing two suggestions as being equal with the same data
-        hashable = (self.transaction, self.debit_account, self.credit_account)
+        hashable = (self.split, self.new_account)
         return hash(hashable)
 
     def __repr__(self):
-        return "{cls}({transaction}, credit_account='{credit_account}')".format(
-                                                                cls=self.__class__.__name__,
-                                                                transaction=self.transaction,
-                                                                credit_account=self.credit_account)
+        return "{cls}({split}, {new_account})".format(cls=self.__class__.__name__,
+                                                      split=self.split,
+                                                      new_account=self.new_account)
+
 
 class Suggester:
     """Provides a list of Suggestions for unmatched transactions.
@@ -53,18 +59,32 @@ class Suggester:
 
             A list of Suggestion objects.
         """
-        transactions = self._book.get_uncategorized_transactions()
         suggestions = []
 
-        for transaction in transactions:
-            patterns = self._config.get_patterns_for_account(transaction.debit_account)
-            for pattern in patterns:
-                if pattern.is_match(transaction.description):
-                    suggestion = Suggestion(
-                        transaction=transaction,
-                        credit_account=pattern.account
-                    )
-                    suggestions.append(suggestion)
-                    break
+        for account in self._get_uncategorized_accounts():
+            for split in account.splits:
+                suggestions.append(self._get_suggestion_for_split(split))
+
         return suggestions
 
+    def _get_uncategorized_accounts(self):
+        account_names = self._config.get_uncategorized_account_names()
+        return self._book.get_accounts(account_names)
+
+    def _get_suggestion_for_split(self, split):
+        """
+        Args:
+            split: Split to get a suggestion for.
+
+        Returns:
+            Suggestion object.
+
+        Raises:
+            NoSuggestion.
+        """
+        # TODO  patterns could be cached?
+        patterns = self._config.get_patterns()
+        for pattern in patterns:
+            if pattern.is_match(split.description):
+                return Suggestion(split, new_account=account)
+        raise NoSuggestion(split)

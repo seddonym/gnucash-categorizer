@@ -38,3 +38,10 @@ class Config:
         with open(filename) as config_file:
             yaml_string = config_file.read()
             self._config_dict = yaml.load(yaml_string)
+
+    def get_uncategorized_account_names(self):
+        """
+        Returns:
+            List of account names (strings).
+        """
+        return []

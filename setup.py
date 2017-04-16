@@ -18,5 +18,6 @@ setup(
     author_email='david@seddonym.me',
     url='https://github.com/seddonym/gnucash-categorizer',
     license=license,
-    packages=find_packages(exclude=('tests', 'docs'))
+    packages=find_packages(exclude=('tests',)),
+    scripts=['bin/gnucash-categorize']
 )
