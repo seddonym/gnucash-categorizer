@@ -40,6 +40,13 @@ class TestSplit(TestCase):
 
 
 class TestBook(TestCase):
+    def test_init(self):
+        with patch('gnucashcategorizer.book.piecash.open_book', return_value=sentinel.piecash_book) as mock_open:
+            book = Book(filename=sentinel.filename)
+
+        assert book._piecash_book == sentinel.piecash_book
+        mock_open.assert_called_once_with(sentinel.filename, readonly=False)
+
     def test_get_account(self):
         with patch.object(Book, '_load_from_file'):
             book = Book(filename='baz')
