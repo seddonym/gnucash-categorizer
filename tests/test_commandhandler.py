@@ -115,9 +115,15 @@ class TestCommandHandler(TestCase):
         ])
 
     def test_save_suggestions(self):
+        suggestions = [
+            Mock(),
+            Mock(),
+        ]
         with patch.object(self.command_handler, '_print_message') as mock_print:
-            self.command_handler._save_suggestions(sentinel.suggestions)
+            self.command_handler._save_suggestions(suggestions)
 
+            suggestions[0].save.assert_called_once_with()
+            suggestions[1].save.assert_called_once_with()
             mock_print.assert_called_once_with('Saved.')
 
     def test_get_suggester(self):

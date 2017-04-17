@@ -78,6 +78,15 @@ class TestSuggester(TestCase):
         else:
             assert False
 
+    def test_save(self):
+        split = Mock()
+        new_account = Mock()
+        suggestion = Suggestion(split=split, new_account=new_account)
+
+        suggestion.save()
+
+        split.update_account.assert_called_once_with(new_account)
+
 
 class TestSuggestion(TestCase):
     def test_str(self):

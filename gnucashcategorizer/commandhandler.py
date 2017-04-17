@@ -138,6 +138,8 @@ class CommandHandler:
         Args:
             suggestions: List of suggestions.
         """
+        for suggestion in suggestions:
+            suggestion.save()
         self._print_message('Saved.')
 
     def _user_accepts_suggestions(self):

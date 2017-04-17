@@ -22,6 +22,11 @@ class Suggestion:
     def amount(self):
         return self.split.amount
 
+    def save(self):
+        """Saves the suggestion to the Gnucash book.
+        """
+        self.split.update_account(self.new_account)
+
     def __eq__(self, other):
         return hash(self) == hash(other)
 

@@ -111,4 +111,4 @@ class Split:
         Args:
             account: Account object.
         """
-        raise NotImplemented
+        raise NotImplementedError

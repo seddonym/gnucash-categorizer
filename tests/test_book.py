@@ -19,7 +19,7 @@ class TestAccount(TestCase):
 
 
 class TestSplit(TestCase):
-    def test_split(self):
+    def test_init(self):
         split = Split(piecash_split=sentinel.piecash_split)
         assert split._piecash_split == sentinel.piecash_split
 
@@ -37,6 +37,15 @@ class TestSplit(TestCase):
         piecash_split = Mock()
         split = Split(piecash_split=piecash_split)
         assert split.amount == piecash_split.amount
+
+    def test_update_account(self):
+        piecash_split = Mock()
+        split = Split(piecash_split=piecash_split)
+
+        split.update_account(sentinel.account)
+
+        # TODO - how to do this?
+        assert False
 
 
 class TestBook(TestCase):
