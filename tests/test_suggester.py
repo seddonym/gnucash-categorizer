@@ -6,9 +6,8 @@ from gnucashcategorizer.suggester import Suggester, Suggestion, NoSuggestion
 
 class TestSuggester(TestCase):
     def test_get_suggestions(self):
-        accounts = [
-            Mock(splits=[sentinel.split_1]),
-            Mock(splits=[sentinel.split_2, sentinel.split_3]),
+        splits = [
+            sentinel.split_1, sentinel.split_2, sentinel.split_3
         ]
         suggestions = [
             sentinel.suggestion_1,
@@ -16,7 +15,7 @@ class TestSuggester(TestCase):
             sentinel.suggestion_3,
         ]
         suggester = Suggester(book=Mock(), config=Mock())
-        with patch.object(suggester, '_get_uncategorized_accounts', return_value=accounts):
+        with patch.object(suggester, '_get_uncategorized_splits', return_value=splits):
             with patch.object(suggester, '_get_suggestion_for_split',
                               side_effect=suggestions) as mock_get_suggestion:
                 result = suggester.get_suggestions()
@@ -27,6 +26,17 @@ class TestSuggester(TestCase):
             call(sentinel.split_2),
             call(sentinel.split_3),
         ])
+
+    def test_get_uncategorized_splits(self):
+        book = Mock()
+        book.get_splits_from_accounts.return_value = sentinel.splits
+        suggester = Suggester(book=book, config=Mock())
+
+        with patch.object(suggester, '_get_uncategorized_accounts', return_value=sentinel.accounts):
+            result = suggester._get_uncategorized_splits()
+
+        assert result == sentinel.splits
+        book.get_splits_from_accounts.assert_called_once_with(sentinel.accounts)
 
     def test_get_uncategorized_accounts(self):
         book = Mock()

@@ -61,11 +61,18 @@ class Suggester:
         """
         suggestions = []
 
-        for account in self._get_uncategorized_accounts():
-            for split in account.splits:
-                suggestions.append(self._get_suggestion_for_split(split))
+        splits = self._get_uncategorized_splits()
+        for split in splits:
+            suggestions.append(self._get_suggestion_for_split(split))
 
         return suggestions
+
+    def _get_uncategorized_splits(self):
+        """Returns:
+            List of all splits from uncategorized accounts.
+        """
+        accounts = self._get_uncategorized_accounts()
+        return self._book.get_splits_from_accounts(accounts)
 
     def _get_uncategorized_accounts(self):
         account_names = self._config.get_uncategorized_account_names()

@@ -5,12 +5,24 @@ class Account:
     def __init__(self, full_name):
         self.full_name = full_name
 
+    @classmethod
+    def from_piecash_account(cls, piecash_account):
+        pass
+
+    @property
+    def splits(self):
+        return []
+
 
 class Split:
     """Each Split is linked to an Account and gives the increase/decrease to the account.
     """
     def __init__(self, guid):
         self.guid = guid
+
+    @property
+    def description(self):
+        return 'TODO'
 
 
 class Transaction:
@@ -28,6 +40,9 @@ class Transaction:
 class Book:
     """The entire account GnuCash book.
     """
+    # The character used to separate account names when specifying the full account name
+    ACCOUNT_NAME_SEPARATOR = ':'
+
     def __init__(self, filename):
         self._load_from_file(filename)
 
@@ -47,19 +62,34 @@ class Book:
         Returns:
             piecash.Account object.
         """
-        ACCOUNT_SEPERATOR = ':'
-        parts = fullname.split(ACCOUNT_SEPERATOR)
+        parts = fullname.split(self.ACCOUNT_SEPARATOR)
         # Walk down the accounts, getting from the previous parent
         account = self._piecash_book.root_account
         for part in parts:
-            account = self._piecash_book.get(piecash.Account, name=part, parent=account)
-        return account
+            piecash_account = self._piecash_book.get(piecash.Account, name=part, parent=account)
+        return Account.from_piecash_account(piecash_account)
 
-    def get_splits_from_account_names(self, account_names):
-        """Gets any splits that are assigned to any of the supplied list of account names.
+    def get_splits_from_accounts(self, accounts):
+        """Gets any splits that are assigned to any of the supplied list of accounts.
+
+        Args:
+            accounts: List of Account objects.
+
+        Returns:
+            List of Split objects.
         """
         splits = []
-        for account_name in account_names:
-            account = self._get_account(account_name)
-            splits.extend(account.splits)
+        for account in accounts:
+            splits.extend(self._get_splits_from_account(account))
         return splits
+
+    def _get_splits_from_account(self, account):
+        """Gets any splits that are assigned to the supplied account.
+
+        Args:
+            account: Account object.
+
+        Returns:
+            List of Split objects.
+        """
+        assert False
