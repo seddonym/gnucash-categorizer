@@ -108,7 +108,7 @@ class TestCommandHandler(TestCase):
             self.command_handler._render_suggestions(suggestions)
 
         mock_print.assert_has_calls([
-            call('Suggestions for unresolved transactions:'),
+            call('Suggestions for uncategorized transactions:'),
             call('Date\tDescription\tAmount\tDebit\tCredit'),
             call('19/03/2017\tCASH 19 MAR\t£30.00\tAssets.Current Account\tExpenses.Groceries'),
             call('21/03/2017\tMonthly Salary\t£1,500.00\tIncome.Salary\tAssets.Current Account'),

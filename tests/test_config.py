@@ -45,7 +45,7 @@ class TestConfig(TestCase):
         filename = os.path.join(os.path.dirname(__file__), 'sample_config.yaml')
         config = Config(filename)
         assert config._config_dict == {
-            'unresolved_accounts': [
+            'uncategorized_accounts': [
                 'Imbalance-GBP',
                 'Assets:Current Assets:Checking Account:Unresolved',
             ],
@@ -55,13 +55,13 @@ class TestConfig(TestCase):
             ],
         }
 
-    def test_get_unresolved_account_names(self):
+    def test_get_uncategorized_account_names(self):
         with patch.object(Config, '_load_from_file'):
             config = Config(sentinel.filename)
             config._config_dict = {
-                'unresolved_accounts': sentinel.account_names,
+                'uncategorized_accounts': sentinel.account_names,
             }
-            assert config.get_unresolved_account_names() == sentinel.account_names
+            assert config.get_uncategorized_account_names() == sentinel.account_names
 
     def test_get_patterns(self):
         with patch.object(Config, '_load_from_file'):

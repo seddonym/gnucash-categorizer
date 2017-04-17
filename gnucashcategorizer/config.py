@@ -50,12 +50,12 @@ class Config:
             yaml_string = config_file.read()
             self._config_dict = yaml.load(yaml_string)
 
-    def get_unresolved_account_names(self):
+    def get_uncategorized_account_names(self):
         """
         Returns:
             List of account names (strings).
         """
-        return self._config_dict['unresolved_accounts']
+        return self._config_dict['uncategorized_accounts']
 
     def get_patterns(self):
         """

@@ -120,7 +120,7 @@ class CommandHandler:
         Args:
             suggestions: List of suggestions.
         """
-        self._print_message('Suggestions for unresolved transactions:')
+        self._print_message('Suggestions for uncategorized transactions:')
         self._print_message('Date\tDescription\tAmount\tDebit\tCredit')
         for suggestion in suggestions:
             parts = [str(part) for part in (
