@@ -40,12 +40,14 @@ class TestSplit(TestCase):
 
     def test_update_account(self):
         piecash_split = Mock()
+        new_account = Mock()
         split = Split(piecash_split=piecash_split)
 
-        split.update_account(sentinel.account)
+        split.update_account(new_account)
 
-        # TODO - how to do this?
-        assert False
+        assert split._piecash_split.account == new_account._piecash_account
+        # TODO - this may not be correct
+        split._piecash_split.book.save.assert_called_once_with()
 
 
 class TestBook(TestCase):

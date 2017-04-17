@@ -111,4 +111,6 @@ class Split:
         Args:
             account: Account object.
         """
-        raise NotImplementedError
+        # TODO - should not use a private property
+        self._piecash_split.account = account._piecash_account
+        self._piecash_split.book.save()
