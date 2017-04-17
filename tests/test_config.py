@@ -7,7 +7,7 @@ from gnucashcategorizer.config import MatchPattern, Config
 class TestMatchPattern(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.match_pattern = MatchPattern(pattern='CASH * FOO', account='Bar')
+        cls.match_pattern = MatchPattern(pattern='CASH * FOO', account_name='foo')
 
     def test_is_match_returns_true_if_exact(self):
         assert self.match_pattern.is_match('CASH * FOO')
@@ -22,15 +22,15 @@ class TestMatchPattern(TestCase):
         assert not self.match_pattern.is_match('CASH something')
 
     def test_match_patterns_are_equal_if_same_data(self):
-        account = 'Foo'
+        account_name = 'Foo:Bar'
         pattern = 'BAR *'
-        match_pattern_a = MatchPattern(pattern, account)
-        match_pattern_b = MatchPattern(pattern, account)
+        match_pattern_a = MatchPattern(pattern, account_name)
+        match_pattern_b = MatchPattern(pattern, account_name)
         assert match_pattern_a == match_pattern_b
 
     def test_str(self):
-        match_pattern = MatchPattern(pattern='BAZ *', account='Foo:Bar')
-        assert str(match_pattern) == "MatchPattern(pattern='BAZ *', account='Foo:Bar')"
+        match_pattern = MatchPattern(pattern='BAZ *', account_name='Foo:Bar')
+        assert str(match_pattern) == "MatchPattern(pattern='BAZ *', account_name='Foo:Bar')"
 
 
 class TestConfig(TestCase):
@@ -73,9 +73,9 @@ class TestConfig(TestCase):
                 ],
             }
             expected_patterns = [
-                MatchPattern(pattern='FOOBAZ', account='Foo:Bar'),
-                MatchPattern(pattern='FOOBAR ?', account='Foo:Bar'),
-                MatchPattern(pattern='baz baz *', account='Baz'),
+                MatchPattern(pattern='FOOBAZ', account_name='Foo:Bar'),
+                MatchPattern(pattern='FOOBAR ?', account_name='Foo:Bar'),
+                MatchPattern(pattern='baz baz *', account_name='Baz'),
             ]
 
             assert config.get_patterns() == expected_patterns

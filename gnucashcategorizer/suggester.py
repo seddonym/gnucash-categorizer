@@ -93,5 +93,6 @@ class Suggester:
         patterns = self._config.get_patterns()
         for pattern in patterns:
             if pattern.is_match(split.description):
-                return Suggestion(split, new_account=pattern.account)
+                account = self._book.get_account(pattern.account_name)
+                return Suggestion(split, new_account=account)
         raise NoSuggestion(split)

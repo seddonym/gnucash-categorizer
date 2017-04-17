@@ -55,12 +55,14 @@ class TestSuggester(TestCase):
         pattern_2.is_match.return_value = True
         config.get_patterns.return_value = [pattern_1, pattern_2]
         split = Mock()
-
-        suggester = Suggester(book=Mock(), config=config)
+        book = Mock()
+        book.get_account.return_value = sentinel.account
+        suggester = Suggester(book=book, config=config)
         result = suggester._get_suggestion_for_split(split)
 
-        assert result == Suggestion(split, new_account=pattern_2.account)
+        assert result == Suggestion(split, new_account=sentinel.account)
         pattern_2.is_match.assert_called_once_with(split.description)
+        book.get_account.assert_called_once_with(pattern_2.account_name)
 
     def test_get_suggestion_for_split_raises_no_suggestion_found_if_no_match(self):
         config = Mock()

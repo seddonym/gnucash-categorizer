@@ -96,22 +96,20 @@ class TestCommandHandler(TestCase):
             Mock(date=date(2017, 3, 19),
                  description='CASH 19 MAR',
                  amount=Money(30, GBP),
-                 debit_account='Assets.Current Account',
-                 credit_account='Expenses.Groceries'),
+                 new_account='Expenses:Groceries'),
             Mock(date=date(2017, 3, 21),
                  description='Monthly Salary',
                  amount=Money(1500, GBP),
-                 debit_account='Income.Salary',
-                 credit_account='Assets.Current Account'),
+                 new_account='Income:Salary'),
         ]
         with patch.object(self.command_handler, '_print_message') as mock_print:
             self.command_handler._render_suggestions(suggestions)
 
         mock_print.assert_has_calls([
             call('Suggestions for uncategorized transactions:'),
-            call('Date\tDescription\tAmount\tDebit\tCredit'),
-            call('19/03/2017\tCASH 19 MAR\t£30.00\tAssets.Current Account\tExpenses.Groceries'),
-            call('21/03/2017\tMonthly Salary\t£1,500.00\tIncome.Salary\tAssets.Current Account'),
+            call('Date\tDescription\tAmount\tAccount'),
+            call('19/03/2017\tCASH 19 MAR\t£30.00\tExpenses:Groceries'),
+            call('21/03/2017\tMonthly Salary\t£1,500.00\tIncome:Salary'),
         ])
 
     def test_save_suggestions(self):

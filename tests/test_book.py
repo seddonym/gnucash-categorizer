@@ -1,5 +1,7 @@
 from unittest import TestCase
 from unittest.mock import Mock, patch, sentinel, call
+from moneyed import Money, GBP
+from decimal import Decimal
 from gnucashcategorizer.book import Book, Split, Account
 import piecash
 
@@ -17,6 +19,11 @@ class TestAccount(TestCase):
             call(sentinel.piecash_split_2),
         ])
 
+    def test_str(self):
+        piecash_account = Mock(fullname='Foo:Bar Baz')
+        account = Account(piecash_account=piecash_account)
+        assert str(account) == 'Foo:Bar Baz'
+
 
 class TestSplit(TestCase):
     def test_init(self):
@@ -31,12 +38,12 @@ class TestSplit(TestCase):
     def test_date(self):
         piecash_split = Mock()
         split = Split(piecash_split=piecash_split)
-        assert split.date == piecash_split.transaction.date
+        assert split.date == piecash_split.transaction.post_date
 
     def test_amount(self):
-        piecash_split = Mock()
+        piecash_split = Mock(value=Decimal(150.55))
         split = Split(piecash_split=piecash_split)
-        assert split.amount == piecash_split.amount
+        assert split.amount == Money(Decimal(150.55), GBP)
 
     def test_update_account(self):
         piecash_split = Mock()
@@ -65,7 +72,7 @@ class TestBook(TestCase):
         with patch.object(Book, '_get_piecash_account_from_name',
                           return_value=sentinel.piecash_account) as mock_get_piecash:
             with patch('gnucashcategorizer.book.Account', return_value=sentinel.account) as mock_account_cls:
-                result = book._get_account(sentinel.name)
+                result = book.get_account(sentinel.name)
 
         assert result == sentinel.account
         mock_get_piecash.assert_called_once_with(sentinel.name)
@@ -102,7 +109,7 @@ class TestBook(TestCase):
         account_names = [sentinel.account_name1, sentinel.account_name2]
         accounts = [sentinel.account1, sentinel.account2]
 
-        with patch.object(Book, '_get_account', side_effect=accounts) as mock_get_account:
+        with patch.object(Book, 'get_account', side_effect=accounts) as mock_get_account:
             result = book.get_accounts(account_names)
 
         assert result == accounts

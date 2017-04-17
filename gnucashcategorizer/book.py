@@ -1,7 +1,5 @@
 import piecash
-from _datetime import date
-from IPython.core.release import description
-from sqlalchemy.orm.persistence import save_obj
+from moneyed import Money, GBP
 
 
 class Book:
@@ -26,18 +24,17 @@ class Book:
         """
         accounts = []
         for name in account_names:
-            accounts.append(self._get_account(name))
+            accounts.append(self.get_account(name))
         return accounts
 
-    def _get_account(self, fullname):
-        """Gets an Account by colon-separated fullname.
+    def get_account(self, name):
+        """Gets an Account by colon-separated name.
         Args:
-            fullname: the name of the account, e.g. 'Equity:Opening Balances'
+            name: the name of the account, e.g. 'Equity:Opening Balances'
         Returns:
             Account object.
         """
-        # TODO rename fullname to name
-        piecash_account = self._get_piecash_account_from_name(fullname)
+        piecash_account = self._get_piecash_account_from_name(name)
         return Account(piecash_account)
 
     def _get_piecash_account_from_name(self, name):
@@ -87,6 +84,9 @@ class Account:
             splits.append(split)
         return splits
 
+    def __str__(self):
+        return self._piecash_account.fullname
+
 
 class Split:
     """Each Split is linked to an Account and gives the increase/decrease to the account.
@@ -96,7 +96,7 @@ class Split:
 
     @property
     def date(self):
-        return self._piecash_split.transaction.date
+        return self._piecash_split.transaction.post_date
 
     @property
     def description(self):
@@ -104,7 +104,8 @@ class Split:
 
     @property
     def amount(self):
-        return self._piecash_split.amount
+        # TODO - check currency
+        return Money(self._piecash_split.value, GBP)
 
     def update_account(self, account):
         """Saves the split with the new account.

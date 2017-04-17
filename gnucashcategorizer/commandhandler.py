@@ -112,7 +112,7 @@ class CommandHandler:
             Suggester object.
         """
         return Suggester(config=options.get_config(),
-                       book=options.get_book())
+                         book=options.get_book())
 
     def _render_suggestions(self, suggestions):
         """Outputs the suggestions for the user to review.
@@ -120,17 +120,17 @@ class CommandHandler:
         Args:
             suggestions: List of suggestions.
         """
+        COLUMN_SEPARATOR = '\t'
         self._print_message('Suggestions for uncategorized transactions:')
-        self._print_message('Date\tDescription\tAmount\tDebit\tCredit')
+        self._print_message(COLUMN_SEPARATOR.join(['Date', 'Description', 'Amount', 'Account']))
         for suggestion in suggestions:
             parts = [str(part) for part in (
                 suggestion.date.strftime('%d/%m/%Y'),
                 suggestion.description,
                 format_money(suggestion.amount, locale='en_GB'),
-                suggestion.debit_account,
-                suggestion.credit_account,
+                suggestion.new_account,
             )]
-            self._print_message('\t'.join(parts))
+            self._print_message(COLUMN_SEPARATOR.join(parts))
 
     def _save_suggestions(self, suggestions):
         """Saves the list of suggestions to the accounts book.

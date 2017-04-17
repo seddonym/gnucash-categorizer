@@ -8,11 +8,11 @@ class MatchPattern:
 
     Args:
         pattern: text to match to a description (string).
-        account: account to point the transaction to (string).
+        account_name: full name of account to point the transaction to (string).
     """
-    def __init__(self, pattern, account):
+    def __init__(self, pattern, account_name):
         self.pattern = pattern
-        self.account = account
+        self.account_name = account_name
 
     def is_match(self, description):
         """Returns whether or not a description matches the pattern.
@@ -29,13 +29,13 @@ class MatchPattern:
         return hash(self) == hash(other)
 
     def __hash__(self):
-        hashable = (self.pattern, self.account)
+        hashable = (self.pattern, self.account_name)
         return hash(hashable)
 
     def __repr__(self):
-        return "{cls}(pattern='{pattern}', account='{account}')".format(cls=self.__class__.__name__,
-                                                                        pattern=self.pattern,
-                                                                        account=self.account)
+        return "{cls}(pattern='{pattern}', account_name='{account_name}')".format(cls=self.__class__.__name__,
+                                                                                  pattern=self.pattern,
+                                                                                  account_name=self.account_name)
 
 class Config:
     """Reads and stores configuration from a YAML file.
@@ -67,6 +67,6 @@ class Config:
             assert len(match_dict.keys()) == 1, "Unexpected format."
             account_name = list(match_dict.keys())[0]
             for match in match_dict[account_name]:
-                match_pattern = MatchPattern(pattern=match, account=account_name)
+                match_pattern = MatchPattern(pattern=match, account_name=account_name)
                 match_patterns.append(match_pattern)
         return match_patterns
