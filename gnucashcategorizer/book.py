@@ -82,7 +82,7 @@ class Account:
             List of Split objects.
         """
         splits = []
-        for piecash_split in self._piecash_accounts.splits:
+        for piecash_split in self._piecash_account.splits:
             split = Split(piecash_split)
             splits.append(split)
         return splits

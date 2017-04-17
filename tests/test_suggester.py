@@ -1,6 +1,5 @@
 from unittest import TestCase
 from unittest.mock import Mock, patch, sentinel, call
-from gnucashcategorizer.book import Account, Split
 from gnucashcategorizer.suggester import Suggester, Suggestion, NoSuggestion
 
 

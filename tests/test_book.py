@@ -6,7 +6,16 @@ import piecash
 
 class TestAccount(TestCase):
     def test_splits(self):
-        assert False
+        piecash_account = Mock(splits=[sentinel.piecash_split_1, sentinel.piecash_split_2])
+        splits = [sentinel.split_1, sentinel.split_2]
+        account = Account(piecash_account=piecash_account)
+        with patch('gnucashcategorizer.book.Split', side_effect=splits) as mock_account_cls:
+            assert account.splits == splits
+
+        mock_account_cls.assert_has_calls([
+            call(sentinel.piecash_split_1),
+            call(sentinel.piecash_split_2),
+        ])
 
 
 class TestSplit(TestCase):
@@ -15,16 +24,19 @@ class TestSplit(TestCase):
         assert split._piecash_split == sentinel.piecash_split
 
     def test_description(self):
-        split = Split(piecash_split=sentinel.piecash_split)
-        assert split.description == sentinel.piecash_split.transaction.description
+        piecash_split = Mock()
+        split = Split(piecash_split=piecash_split)
+        assert split.description == piecash_split.transaction.description
 
-    def test_description(self):
-        split = Split(piecash_split=sentinel.piecash_split)
-        assert split.date == sentinel.piecash_split.transaction.date
+    def test_date(self):
+        piecash_split = Mock()
+        split = Split(piecash_split=piecash_split)
+        assert split.date == piecash_split.transaction.date
 
     def test_amount(self):
-        split = Split(piecash_split=sentinel.piecash_split)
-        assert split.amount == sentinel.piecash_split.amount
+        piecash_split = Mock()
+        split = Split(piecash_split=piecash_split)
+        assert split.amount == piecash_split.amount
 
 
 class TestBook(TestCase):
