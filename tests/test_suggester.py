@@ -94,8 +94,8 @@ class TestSuggestion(TestCase):
         assert repr(suggestion) == "Suggestion(foo split, bar account)"
 
     def test_suggestions_are_equal_if_same_data(self):
-        split = Split(guid='foo')
-        account = Account(full_name='bar')
+        split = Mock()
+        account = Mock()
         suggestion_a = Suggestion(
             split=split,
             new_account=account

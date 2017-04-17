@@ -1,8 +1,3 @@
-from datetime import date
-from moneyed import Money, GBP
-from .book import Transaction
-
-
 class NoSuggestion(Exception):
     """Exception raised when no suggestion could be made.
     """
