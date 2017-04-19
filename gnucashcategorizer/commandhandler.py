@@ -6,6 +6,7 @@ from .config import Config
 from .book import Book
 from gnucashcategorizer.suggester import Suggester
 from decimal import ROUND_HALF_UP
+from termcolor import colored, cprint
 
 
 set_money_format('en_GB', group_size=3, group_separator=",", decimal_point=".",
@@ -50,6 +51,18 @@ class CommandHandler:
 
         CommandHandler().run()
     """
+    MESSAGE_INFO = 'IN'
+    MESSAGE_SUCCESS = 'GR'
+    MESSAGE_WARNING = 'WA'
+    MESSAGE_ERROR = 'ER'
+    
+    MESSAGE_STYLE_MAP = {
+        MESSAGE_SUCCESS: 'green',
+        MESSAGE_WARNING: 'yellow',
+        MESSAGE_ERROR: 'red',
+    }
+    COLUMN_WIDTH = 40
+    
     def run(self):
         """Main runner for the program.
         """
@@ -58,7 +71,7 @@ class CommandHandler:
         if self._user_accepts_suggestions():
             self._save_suggestions(suggestions)
         else:
-            self._print_message('Aborted.')
+            self._print_message('Aborted.', self.MESSAGE_WARNING)
 
     def _parse_options_from_command_line(self):
         """Gets the config and book filenames from the command line.
@@ -120,9 +133,10 @@ class CommandHandler:
         Args:
             suggestions: List of suggestions.
         """
-        COLUMN_SEPARATOR = '\t'
-        self._print_message('Suggestions for uncategorized transactions:')
-        self._print_message(COLUMN_SEPARATOR.join(['Date', 'Description', 'Amount', 'Account']))
+        self._print_message('\nSuggestions for uncategorized transactions:\n')
+        headings = ['Date', 'Description', 'Amount', 'Account']
+        self._print_message(self._format_cells(headings))
+        self._print_horizontal_line(cell_count=len(headings))
         for suggestion in suggestions:
             parts = [str(part) for part in (
                 suggestion.date.strftime('%d/%m/%Y'),
@@ -130,7 +144,25 @@ class CommandHandler:
                 format_money(suggestion.amount, locale='en_GB'),
                 suggestion.new_account,
             )]
-            self._print_message(COLUMN_SEPARATOR.join(parts))
+            self._print_message(self._format_cells(parts))
+
+    def _format_cells(self, cells):
+        """Args:
+            A list of strings.
+        Returns:
+            A string with the strings evenly spaced into columns. 
+        """
+        cell_format = '{: <%d}' % self.COLUMN_WIDTH
+        format_string = ' '.join([cell_format  * len(cells)])
+        return format_string.format(*cells)
+
+    def _print_horizontal_line(self, cell_count):
+        """Prints a horizontal line to span the number of cells provided. 
+        Args:
+            How many cells.
+        """
+        LINE_CHARACTER = '-'
+        self._print_message(LINE_CHARACTER * self.COLUMN_WIDTH * cell_count)
 
     def _save_suggestions(self, suggestions):
         """Saves the list of suggestions to the accounts book.
@@ -140,7 +172,7 @@ class CommandHandler:
         """
         for suggestion in suggestions:
             suggestion.save()
-        self._print_message('Saved.')
+        self._print_message('Saved.', self.MESSAGE_SUCCESS)
 
     def _user_accepts_suggestions(self):
         """Asks the user whether or not they accept the suggestions.
@@ -149,20 +181,29 @@ class CommandHandler:
             Whether they accept the suggestions (boolean).
         """
         YES, NO = 'y', 'n'
-
+        print()
         while True:
             user_input = input('Accept these suggestions? (y/n): ').lower()
             if user_input in [YES, NO]:
                 break
             else:
-                self._print_message('Please enter {} or {}.'.format(YES, NO))
+                self._print_message('Please enter {} or {}.'.format(YES, NO),
+                                    self.MESSAGE_WARNING)
 
         return user_input == YES
 
-    def _print_message(self, message):
+    def _print_message(self, message, style=MESSAGE_INFO):
         """Outputs the given message to the user.
 
         Args:
             message: Message to output (string).
+            style: MESSAGE_INFO, MESSAGE_SUCCESS,
+                   MESSAGE_WARNING or MESSAGE_ERROR.
         """
-        print(message)
+        
+        try:
+            color = self.MESSAGE_STYLE_MAP[style]
+            cmessage = colored(message, color)
+        except KeyError:
+            cmessage = message
+        cprint(cmessage)
