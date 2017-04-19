@@ -1,0 +1,9 @@
+uncategorized_accounts:
+  - Imbalance-GBP
+  - Assets:Current Assets:Checking Account:Unresolved
+matches:
+  - Expenses:Groceries:
+      - CASH *
+      - STORE ?
+  - Income:Salary:
+      - MYEMPLOYER
