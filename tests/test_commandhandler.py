@@ -127,10 +127,16 @@ class TestCommandHandler(TestCase):
         ])
 
     def test_format_cells(self):
-        assert False
+        self.command_handler.COLUMN_WIDTH = 8
+        result = self.command_handler._format_cells(['Foo', 'Bar', 'FooBar'])
+        assert result == 'Foo     Bar     FooBar  '
 
     def test_print_horizontal_line(self):
-        assert False
+        self.command_handler.COLUMN_WIDTH = 4
+        with patch.object(self.command_handler, '_print_message') as mock_print:
+            self.command_handler._print_horizontal_line(3)
+            # Should be 4 * 3 dashes
+            mock_print.assert_called_once_with('------------')
 
     def test_save_suggestions(self):
         suggestions = [
@@ -194,21 +200,20 @@ class TestCommandHandler(TestCase):
                             If None is supplied, no color is expected.
         """
         kwargs = dict(style=style) if style else dict()
-        
+
         with patch('gnucashcategorizer.commandhandler.cprint') as mock_cprint:
             with patch('gnucashcategorizer.commandhandler.colored') as mock_colored:
                 self.command_handler._print_message('Foo.', **kwargs)
-                
+
         if expected_color:
             mock_colored.assert_called_once_with('Foo.', expected_color)
             mock_cprint.assert_called_once_with(mock_colored.return_value)
         else:
             mock_cprint.assert_called_once_with('Foo.')
-        
-        
+
     def test_print_message_default(self):
         self.assert_print_message_is_colored(style=None, expected_color=None)
-    
+
     def test_print_message_info(self):
         self.assert_print_message_is_colored(style=self.command_handler.MESSAGE_INFO,
                                              expected_color=None)
