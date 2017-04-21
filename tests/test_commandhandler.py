@@ -57,7 +57,8 @@ class TestCommandHandler(TestCase):
 
                             mock_preview.assert_called_once_with(sentinel.options)
                             assert not mock_save.called
-                            mock_print.assert_called_once_with('Aborted.')
+                            mock_print.assert_called_once_with('Aborted.',
+                                                               self.command_handler.MESSAGE_WARNING)
 
     def test_parse_options_from_command_line(self):
         CONFIG_FILENAME = 'path/to/config.yaml'
@@ -103,14 +104,33 @@ class TestCommandHandler(TestCase):
                  new_account='Income:Salary'),
         ]
         with patch.object(self.command_handler, '_print_message') as mock_print:
-            self.command_handler._render_suggestions(suggestions)
+            with patch.object(self.command_handler, '_format_cells') as mock_format_cells:
+                mock_format_cells.side_effect = [
+                    sentinel.table_headings_string,
+                    sentinel.table_data_string_1,
+                    sentinel.table_data_string_2,
+                ]
+                with patch.object(self.command_handler, '_print_horizontal_line') as mock_print_hr:
+                    self.command_handler._render_suggestions(suggestions)
 
-        mock_print.assert_has_calls([
-            call('Suggestions for uncategorized transactions:'),
-            call('Date\tDescription\tAmount\tAccount'),
-            call('19/03/2017\tCASH 19 MAR\t£30.00\tExpenses:Groceries'),
-            call('21/03/2017\tMonthly Salary\t£1,500.00\tIncome:Salary'),
+        mock_format_cells.assert_has_calls([
+            call(['Date', 'Description', 'Amount', 'Account']),
+            call(['19/03/2017', 'CASH 19 MAR', '£30.00', 'Expenses:Groceries']),
+            call(['21/03/2017', 'Monthly Salary', '£1,500.00', 'Income:Salary']),
         ])
+        mock_print_hr.assert_called_once_with(cell_count=4)
+        mock_print.assert_has_calls([
+            call('\nSuggestions for uncategorized transactions:\n'),
+            call(sentinel.table_headings_string),
+            call(sentinel.table_data_string_1),
+            call(sentinel.table_data_string_2),
+        ])
+
+    def test_format_cells(self):
+        assert False
+
+    def test_print_horizontal_line(self):
+        assert False
 
     def test_save_suggestions(self):
         suggestions = [
@@ -122,7 +142,8 @@ class TestCommandHandler(TestCase):
 
             suggestions[0].save.assert_called_once_with()
             suggestions[1].save.assert_called_once_with()
-            mock_print.assert_called_once_with('Saved.')
+            mock_print.assert_called_once_with('Saved.',
+                                               self.command_handler.MESSAGE_SUCCESS)
 
     def test_get_suggester(self):
         options = Mock()
@@ -138,7 +159,7 @@ class TestCommandHandler(TestCase):
         with patch('builtins.input', side_effect=YES) as mock_input:
             result = self.command_handler._user_accepts_suggestions()
 
-            mock_input.assert_called_once_with('Accept these suggestions? (y/n): ')
+            mock_input.assert_called_once_with('Save these suggestions to the accounts file? (y/n): ')
             assert result is True
 
     def test_user_accepts_suggestions_returns_false_when_they_enter_no(self):
@@ -146,7 +167,7 @@ class TestCommandHandler(TestCase):
         with patch('builtins.input', side_effect=NO) as mock_input:
             result = self.command_handler._user_accepts_suggestions()
 
-            mock_input.assert_called_once_with('Accept these suggestions? (y/n): ')
+            mock_input.assert_called_once_with('Save these suggestions to the accounts file? (y/n): ')
             assert result is False
 
     def test_user_clarifies_input_when_they_enter_invalid_answer(self):
@@ -157,13 +178,49 @@ class TestCommandHandler(TestCase):
                 result = self.command_handler._user_accepts_suggestions()
 
                 mock_input.assert_has_calls([
-                    call('Accept these suggestions? (y/n): '),
-                    call('Accept these suggestions? (y/n): '),
+                    call('Save these suggestions to the accounts file? (y/n): '),
+                    call('Save these suggestions to the accounts file? (y/n): '),
                 ])
-                mock_print.assert_called_once_with('Please enter y or n.')
+                mock_print.assert_called_once_with('Please enter y or n.',
+                                                   self.command_handler.MESSAGE_WARNING)
                 assert result is True
 
-    def test_print_message(self):
-        with patch('builtins.print') as mock_print:
-            self.command_handler._print_message('Foo.')
-        mock_print.assert_called_once_with('Foo.')
+    def assert_print_message_is_colored(self, style=None, expected_color=None):
+        """Given a message style, assert that _print_message applies the correct colour.
+        Args:
+            style: A message style, e.g. CommandHandler.MESSAGE_SUCCESS.  If None
+                   is supplied, _print_message will be called with no style argument.
+            expected_color: A string, the expected color to be applied, e.g. 'green'.
+                            If None is supplied, no color is expected.
+        """
+        kwargs = dict(style=style) if style else dict()
+        
+        with patch('gnucashcategorizer.commandhandler.cprint') as mock_cprint:
+            with patch('gnucashcategorizer.commandhandler.colored') as mock_colored:
+                self.command_handler._print_message('Foo.', **kwargs)
+                
+        if expected_color:
+            mock_colored.assert_called_once_with('Foo.', expected_color)
+            mock_cprint.assert_called_once_with(mock_colored.return_value)
+        else:
+            mock_cprint.assert_called_once_with('Foo.')
+        
+        
+    def test_print_message_default(self):
+        self.assert_print_message_is_colored(style=None, expected_color=None)
+    
+    def test_print_message_info(self):
+        self.assert_print_message_is_colored(style=self.command_handler.MESSAGE_INFO,
+                                             expected_color=None)
+
+    def test_print_message_success(self):
+        self.assert_print_message_is_colored(style=self.command_handler.MESSAGE_SUCCESS,
+                                             expected_color='green')
+
+    def test_print_message_warning(self):
+        self.assert_print_message_is_colored(style=self.command_handler.MESSAGE_WARNING,
+                                             expected_color='yellow')
+
+    def test_print_message_error(self):
+        self.assert_print_message_is_colored(style=self.command_handler.MESSAGE_ERROR,
+                                             expected_color='red')

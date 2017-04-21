@@ -52,7 +52,7 @@ class CommandHandler:
         CommandHandler().run()
     """
     MESSAGE_INFO = 'IN'
-    MESSAGE_SUCCESS = 'GR'
+    MESSAGE_SUCCESS = 'SU'
     MESSAGE_WARNING = 'WA'
     MESSAGE_ERROR = 'ER'
     
@@ -183,7 +183,7 @@ class CommandHandler:
         YES, NO = 'y', 'n'
         print()
         while True:
-            user_input = input('Accept these suggestions? (y/n): ').lower()
+            user_input = input('Save these suggestions to the accounts file? (y/n): ').lower()
             if user_input in [YES, NO]:
                 break
             else:
