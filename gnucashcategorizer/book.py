@@ -81,7 +81,7 @@ class Account:
         """
         splits = []
         for piecash_split in self._piecash_account.splits:
-            split = Split(piecash_split)
+            split = Split(piecash_split, account=self)
             splits.append(split)
         return splits
 
@@ -106,8 +106,16 @@ class OppositeAccountNotDetermined(Exception):
 class Split:
     """Each Split is linked to an Account and gives the increase/decrease to the account.
     """
-    def __init__(self, piecash_split):
+    def __init__(self, piecash_split, account):
         self._piecash_split = piecash_split
+        self._account = account
+
+    @property
+    def account(self):
+        """Returns:
+            Account instance.
+        """
+        return self._account
 
     @property
     def date(self):

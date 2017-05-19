@@ -15,8 +15,8 @@ class TestAccount(TestCase):
             assert account.splits == splits
 
         mock_account_cls.assert_has_calls([
-            call(sentinel.piecash_split_1),
-            call(sentinel.piecash_split_2),
+            call(sentinel.piecash_split_1, account=account),
+            call(sentinel.piecash_split_2, account=account),
         ])
 
     def test_str(self):
@@ -27,28 +27,33 @@ class TestAccount(TestCase):
 
 class TestSplit(TestCase):
     def test_init(self):
-        split = Split(piecash_split=sentinel.piecash_split)
+        split = Split(piecash_split=sentinel.piecash_split, account=sentinel.account)
         assert split._piecash_split == sentinel.piecash_split
+        assert split._account == sentinel.account
 
     def test_description(self):
         piecash_split = Mock()
-        split = Split(piecash_split=piecash_split)
+        split = Split(piecash_split=piecash_split, account=Mock())
         assert split.description == piecash_split.transaction.description
 
     def test_date(self):
         piecash_split = Mock()
-        split = Split(piecash_split=piecash_split)
+        split = Split(piecash_split=piecash_split, account=Mock())
         assert split.date == piecash_split.transaction.post_date
 
     def test_amount(self):
         piecash_split = Mock(value=Decimal(150.55))
-        split = Split(piecash_split=piecash_split)
+        split = Split(piecash_split=piecash_split, account=Mock())
         assert split.amount == Money(Decimal(150.55), GBP)
+
+    def test_account(self):
+        split = Split(piecash_split=Mock(), account=sentinel.account)
+        assert split.account == sentinel.account
 
     def test_update_account(self):
         piecash_split = Mock()
         new_account = Mock()
-        split = Split(piecash_split=piecash_split)
+        split = Split(piecash_split=piecash_split, account=Mock())
 
         split.update_account(new_account)
 
