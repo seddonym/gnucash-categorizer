@@ -55,18 +55,53 @@ class Config:
         Returns:
             List of account names (strings).
         """
-        return self._config_dict['uncategorized_accounts']
+        uncategorized_account_names = []
+        for match_dict in self._config_dict['matches']:
+            uncategorized_account_names.append(self._get_only_key_from_dictionary(match_dict))
+        return uncategorized_account_names
 
-    def get_patterns(self):
+    @classmethod
+    def _get_only_key_from_dictionary(cls, dictionary):
         """
+        Args:
+            A dictionary with one entry.
+        Returns:
+            The key of the entry.
+        Raises:
+            ValueError if the dictionary does not have exactly one entry.
+        """
+        number_of_keys = len(dictionary.keys())
+        if number_of_keys != 1:
+            raise ValueError('_get_only_key_from_dictionary received a dictionary '
+                             'with {} keys.'.format(number_of_keys))
+        return tuple(dictionary)[0]
+
+    def get_patterns_for_account_name(self, account_name):
+        """
+        Args:
+           account_name - Name of the imbalance account for which to get patterns.
         Returns:
             List of MatchPatterns.
         """
         match_patterns = []
-        for match_dict in self._config_dict['matches']:
-            assert len(match_dict.keys()) == 1, "Unexpected format."
-            account_name = list(match_dict.keys())[0]
-            for match in match_dict[account_name]:
-                match_pattern = MatchPattern(pattern=match, account_name=account_name)
+        matches_config = self._get_matches_config_for_account_name(account_name)
+        for match_config in matches_config:
+            new_account_name = self._get_only_key_from_dictionary(match_config)
+            for pattern_text in match_config[new_account_name]:
+                match_pattern = MatchPattern(pattern=pattern_text, account_name=new_account_name)
                 match_patterns.append(match_pattern)
         return match_patterns
+
+    def _get_matches_config_for_account_name(self, account_name):
+        """Args:
+            account_name - Name of the imbalance account for which to get the config
+                           relating to that particular account.
+            Returns:
+                List of dictionaries, each in the form, or empty list if none could be found.
+                    {'Destination account': ['PATTERN ONE', 'PATTERN TWO']}
+        """
+        for account_dict in self._config_dict['matches']:
+            config_account_name = self._get_only_key_from_dictionary(account_dict)
+            if account_name == config_account_name:
+                return account_dict[account_name]
+        return []

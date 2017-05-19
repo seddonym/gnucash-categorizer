@@ -45,13 +45,14 @@ class TestConfig(TestCase):
         filename = os.path.join(os.path.dirname(__file__), 'sample_config.yaml')
         config = Config(filename)
         assert config._config_dict == {
-            'uncategorized_accounts': [
-                'Imbalance-GBP',
-                'Assets:Current Assets:Checking Account:Unresolved',
-            ],
             'matches': [
-                {'Expenses:Groceries': ['CASH *', 'STORE ?']},
-                {'Income:Salary': ['MYEMPLOYER']}
+                {'Assets:Current Assets:Checking Account:Uncategorized': [
+                    {'Expenses:Groceries': ['CASH *', 'STORE ?']},
+                    {'Income:Salary': ['MYEMPLOYER']},
+                ]},
+                {'Imbalance-GBP': [
+                    {'Expenses:Social': ['CASH *']},
+                ]}
             ],
         }
 
@@ -59,17 +60,25 @@ class TestConfig(TestCase):
         with patch.object(Config, '_load_from_file'):
             config = Config(sentinel.filename)
             config._config_dict = {
-                'uncategorized_accounts': sentinel.account_names,
+                'matches': [
+                    {sentinel.foo_account: []},
+                    {sentinel.bar_account: []}
+                ],
             }
-            assert config.get_uncategorized_account_names() == sentinel.account_names
+            assert config.get_uncategorized_account_names() == [sentinel.foo_account, sentinel.bar_account]
 
-    def test_get_patterns(self):
+    def test_get_patterns_for_account_name(self):
         with patch.object(Config, '_load_from_file'):
             config = Config(sentinel.filename)
             config._config_dict = {
                 'matches': [
-                    {'Foo:Bar': ['FOOBAZ', 'FOOBAR ?']},
-                    {'Baz': ['baz baz *']}
+                    {'Another Account': [
+                        {'Foo:Bar': ['WRONG']},
+                    ]},
+                    {'Imbalance Account': [
+                        {'Foo:Bar': ['FOOBAZ', 'FOOBAR ?']},
+                        {'Baz': ['baz baz *']}
+                    ]},
                 ],
             }
             expected_patterns = [
@@ -77,5 +86,4 @@ class TestConfig(TestCase):
                 MatchPattern(pattern='FOOBAR ?', account_name='Foo:Bar'),
                 MatchPattern(pattern='baz baz *', account_name='Baz'),
             ]
-
-            assert config.get_patterns() == expected_patterns
+            assert config.get_patterns_for_account_name('Imbalance Account') == expected_patterns

@@ -53,7 +53,7 @@ class TestSuggester(TestCase):
         pattern_1.is_match.return_value = False
         pattern_2 = Mock()
         pattern_2.is_match.return_value = True
-        config.get_patterns.return_value = [pattern_1, pattern_2]
+        config.get_patterns_for_account_name.return_value = [pattern_1, pattern_2]
         split = Mock()
         book = Mock()
         book.get_account.return_value = sentinel.account
@@ -61,6 +61,7 @@ class TestSuggester(TestCase):
         result = suggester._get_suggestion_for_split(split)
 
         assert result == Suggestion(split, new_account=sentinel.account)
+        config.get_patterns_for_account_name.assert_called_once_with(split.account.name)
         pattern_2.is_match.assert_called_once_with(split.description)
         book.get_account.assert_called_once_with(pattern_2.account_name)
 
@@ -70,11 +71,12 @@ class TestSuggester(TestCase):
         pattern_1.is_match.return_value = False
         pattern_2 = Mock()
         pattern_2.is_match.return_value = False
-        config.get_patterns.return_value = [pattern_1, pattern_2]
+        split = Mock()
+        config.get_patterns_for_account_name.return_value = [pattern_1, pattern_2]
 
         suggester = Suggester(book=Mock(), config=config)
         try:
-            suggester._get_suggestion_for_split(Mock())
+            suggester._get_suggestion_for_split(split)
         except NoSuggestion:
             assert True
         else:

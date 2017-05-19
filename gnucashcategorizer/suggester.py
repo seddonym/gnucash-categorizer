@@ -89,8 +89,9 @@ class Suggester:
         Raises:
             NoSuggestion.
         """
-        # TODO  patterns could be cached?
-        patterns = self._config.get_patterns()
+        # TODO - this is not very efficient as we keep recalculating the patterns
+        # for the same accounts, if there are many splits for the same account (which is likely).
+        patterns = self._config.get_patterns_for_account_name(split.account.name)
         for pattern in patterns:
             if pattern.is_match(split.description):
                 account = self._book.get_account(pattern.account_name)

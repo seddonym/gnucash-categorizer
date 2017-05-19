@@ -1,5 +1,6 @@
 import piecash
 from moneyed import Money, GBP
+from builtins import NotImplementedError
 
 
 class Book:
@@ -84,8 +85,22 @@ class Account:
             splits.append(split)
         return splits
 
-    def __str__(self):
+    @property
+    def name(self):
+        """Returns:
+            The full name of the account.
+        """
         return self._piecash_account.fullname
+
+    def __str__(self):
+        return self.name
+
+
+class OppositeAccountNotDetermined(Exception):
+    """A single opposite account could not be determined, as might
+    be the case when more than two splits are grouped together into a single entry.
+    """
+    pass
 
 
 class Split:
@@ -106,6 +121,14 @@ class Split:
     def amount(self):
         # TODO - check currency
         return Money(self._piecash_split.value, GBP)
+
+    def get_opposite_account(self):
+        """Returns:
+            The Account that is the corresponding credit/debit of this one.
+        Raises:
+            OppositeAccountNotDetermined - not all splits will have a single opposite account.
+        """
+        raise NotImplementedError
 
     def update_account(self, account):
         """Saves the split with the new account.
