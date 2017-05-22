@@ -92,7 +92,8 @@ class CommandHandler:
         return CommandOptions(config_filename=args.config, book_filename=args.accounts)
 
     def _get_and_preview_suggestions(self, options):
-        """Gets and previews the suggested changes to make to the transactions.
+        """Gets and previews the suggested changes to make to the transactions,
+        together with any splits for which there were no suggestions.
 
         Args:
             options: CommandOptions object.
@@ -100,20 +101,25 @@ class CommandHandler:
         Returns:
             suggestions: List of Suggestions.
         """
-        suggestions = self._get_suggestions(options)
+        suggestions, splits_without_suggestions = self._get_suggestions_and_splits_without_suggestions(options)
         self._render_suggestions(suggestions)
+        self._render_splits_without_suggestions(splits_without_suggestions)
         return suggestions
 
-    def _get_suggestions(self, options):
-        """Gets the suggested changes to make to the transactions.
+    def _get_suggestions_and_splits_without_suggestions(self, options):
+        """Gets the suggested changes to make to the transactions, together with any
+        splits for which there were no suggestions.
 
         Args:
             options: CommandOptions object.
 
         Returns:
-            List of Suggestions.
+            Two-tuple containing:
+                - List of Suggestions.
+                - List of Splits without suggestions.
         """
-        return self._get_suggester(options).get_suggestions()
+        suggester = self._get_suggester(options)
+        return suggester.get_suggestions(), suggester.get_splits_without_suggestions()
 
     def _get_suggester(self, options):
         """Gets a Suggester object to use to get the suggestions.
@@ -144,6 +150,25 @@ class CommandHandler:
                 format_money(suggestion.amount, locale='en_GB'),
                 suggestion.old_account,
                 suggestion.new_account,
+            )]
+            self._print_message(self._format_cells(parts))
+
+    def _render_splits_without_suggestions(self, splits):
+        """Outputs the splits without suggestions.
+
+        Args:
+            splits: List of splits for which there were no suggestions.
+        """
+        self._print_message('\nTransactions for which there were no suggestions:\n')
+        headings = ['Date', 'Description', 'Amount', 'Account']
+        self._print_message(self._format_cells(headings))
+        self._print_horizontal_line(cell_count=len(headings))
+        for split in splits:
+            parts = [str(part) for part in (
+                split.date.strftime('%d/%m/%Y'),
+                split.description,
+                format_money(split.amount, locale='en_GB'),
+                split.account,
             )]
             self._print_message(self._format_cells(parts))
 

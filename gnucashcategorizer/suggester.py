@@ -62,16 +62,30 @@ class Suggester:
         """Gets a list of suggestions to apply to the book.
 
         Returns:
-
             A list of Suggestion objects.
         """
         suggestions = []
+        self._splits_without_suggestions = []
 
         splits = self._get_uncategorized_splits()
         for split in splits:
-            suggestions.append(self._get_suggestion_for_split(split))
+            try:
+                suggestions.append(self._get_suggestion_for_split(split))
+            except NoSuggestion:
+                self._splits_without_suggestions.append(split)
 
         return suggestions
+
+    def get_splits_without_suggestions(self):
+        """Returns:
+            - List of Splits for which there are no suggestions.
+        Raises:
+            RuntimeError, if this method was called before get_suggestions was called.
+        """
+        try:
+            return self._splits_without_suggestions
+        except AttributeError:
+            raise RuntimeError('get_splits_without_suggestions must be called after get_suggestions.')
 
     def _get_uncategorized_splits(self):
         """Returns:

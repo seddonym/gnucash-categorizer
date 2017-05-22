@@ -74,23 +74,26 @@ class TestCommandHandler(TestCase):
             mock_options_cls.assert_called_once_with(config_filename=CONFIG_FILENAME,
                                                      book_filename=BOOK_FILENAME)
 
-    def test_get_suggestions(self):
+    def test_get_suggestions_and_splits_without_suggestions(self):
         suggester = Mock()
         with patch.object(self.command_handler, '_get_suggester', return_value=suggester) as mock_get_suggester:
-            suggestions = self.command_handler._get_suggestions(sentinel.options)
+            suggestions, splits = self.command_handler._get_suggestions_and_splits_without_suggestions(sentinel.options)
 
             assert suggestions == suggester.get_suggestions()
+            assert splits == suggester.get_splits_without_suggestions()
             mock_get_suggester.assert_called_once_with(sentinel.options)
 
     def test_get_and_preview_suggestions(self):
-        with patch.object(self.command_handler, '_get_suggestions',
-                          return_value=sentinel.suggestions) as mock_get_suggestions:
+        with patch.object(self.command_handler, '_get_suggestions_and_splits_without_suggestions',
+                          return_value=(sentinel.suggestions, sentinel.splits)) as mock_get_suggestions:
             with patch.object(self.command_handler, '_render_suggestions') as mock_render_suggestions:
-                suggestions = self.command_handler._get_and_preview_suggestions(sentinel.options)
+                with patch.object(self.command_handler, '_render_splits_without_suggestions') as mock_render_splits:
+                    suggestions = self.command_handler._get_and_preview_suggestions(sentinel.options)
 
         assert suggestions == sentinel.suggestions
         mock_get_suggestions.assert_called_once_with(sentinel.options)
         mock_render_suggestions.assert_called_once_with(sentinel.suggestions)
+        mock_render_splits.assert_called_once_with(sentinel.splits)
 
     def test_render_suggestions(self):
         suggestions = [
@@ -123,6 +126,40 @@ class TestCommandHandler(TestCase):
         mock_print_hr.assert_called_once_with(cell_count=5)
         mock_print.assert_has_calls([
             call('\nSuggestions for uncategorized transactions:\n'),
+            call(sentinel.table_headings_string),
+            call(sentinel.table_data_string_1),
+            call(sentinel.table_data_string_2),
+        ])
+
+    def test_render_splits_without_suggestions(self):
+        suggestions = [
+            Mock(date=date(2017, 3, 19),
+                 description='CASH 19 MAR',
+                 amount=Money(30, GBP),
+                 account='Expenses:Unidentified'),
+            Mock(date=date(2017, 3, 21),
+                 description='Monthly Salary',
+                 amount=Money(1500, GBP),
+                 account='Imbalance:GBP'),
+        ]
+        with patch.object(self.command_handler, '_print_message') as mock_print:
+            with patch.object(self.command_handler, '_format_cells') as mock_format_cells:
+                mock_format_cells.side_effect = [
+                    sentinel.table_headings_string,
+                    sentinel.table_data_string_1,
+                    sentinel.table_data_string_2,
+                ]
+                with patch.object(self.command_handler, '_print_horizontal_line') as mock_print_hr:
+                    self.command_handler._render_splits_without_suggestions(suggestions)
+
+        mock_format_cells.assert_has_calls([
+            call(['Date', 'Description', 'Amount', 'Account']),
+            call(['19/03/2017', 'CASH 19 MAR', '£30.00', 'Expenses:Unidentified']),
+            call(['21/03/2017', 'Monthly Salary', '£1,500.00', 'Imbalance:GBP']),
+        ])
+        mock_print_hr.assert_called_once_with(cell_count=4)
+        mock_print.assert_has_calls([
+            call('\nTransactions for which there were no suggestions:\n'),
             call(sentinel.table_headings_string),
             call(sentinel.table_data_string_1),
             call(sentinel.table_data_string_2),

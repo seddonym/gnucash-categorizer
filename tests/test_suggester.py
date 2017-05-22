@@ -6,11 +6,12 @@ from gnucashcategorizer.suggester import Suggester, Suggestion, NoSuggestion
 class TestSuggester(TestCase):
     def test_get_suggestions(self):
         splits = [
-            sentinel.split_1, sentinel.split_2, sentinel.split_3
+            sentinel.split_1, sentinel.split_2, sentinel.split_3, sentinel.split_4
         ]
         suggestions = [
             sentinel.suggestion_1,
             sentinel.suggestion_2,
+            NoSuggestion(sentinel.split_3),
             sentinel.suggestion_3,
         ]
         suggester = Suggester(book=Mock(), config=Mock())
@@ -19,12 +20,37 @@ class TestSuggester(TestCase):
                               side_effect=suggestions) as mock_get_suggestion:
                 result = suggester.get_suggestions()
 
-        assert result == suggestions
+        assert result == [
+            sentinel.suggestion_1,
+            sentinel.suggestion_2,
+            sentinel.suggestion_3,
+        ]
         mock_get_suggestion.assert_has_calls([
             call(sentinel.split_1),
             call(sentinel.split_2),
             call(sentinel.split_3),
+            call(sentinel.split_4),
         ])
+        # Test it stored the splits without suggestions so we can access them later
+        assert suggester._splits_without_suggestions == [sentinel.split_3]
+
+    def test_get_splits_without_suggestions(self):
+        suggester = Suggester(book=Mock(), config=Mock())
+        suggester._splits_without_suggestions = sentinel.splits
+
+        result = suggester.get_splits_without_suggestions()
+
+        assert result == sentinel.splits
+
+    def test_get_splits_without_suggestions_raises_runtime_error_if_get_suggestions_not_run_first(self):
+        suggester = Suggester(book=Mock(), config=Mock())
+
+        try:
+            suggester.get_splits_without_suggestions()
+        except RuntimeError:
+            assert True
+        else:
+            assert False, 'get_splits_without_suggestions failed to raise a RuntimeError.'
 
     def test_get_uncategorized_splits(self):
         book = Mock()

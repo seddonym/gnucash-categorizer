@@ -130,14 +130,6 @@ class Split:
         # TODO - check currency
         return Money(self._piecash_split.value, GBP)
 
-    def get_opposite_account(self):
-        """Returns:
-            The Account that is the corresponding credit/debit of this one.
-        Raises:
-            OppositeAccountNotDetermined - not all splits will have a single opposite account.
-        """
-        raise NotImplementedError
-
     def update_account(self, account):
         """Saves the split with the new account.
         Args:
