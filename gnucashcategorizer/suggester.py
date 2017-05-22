@@ -11,6 +11,12 @@ class Suggestion:
         self.new_account = new_account
 
     @property
+    def old_account(self):
+        """The account that the split is currently associated with.
+        """
+        return self.split.account
+
+    @property
     def date(self):
         return self.split.date
 

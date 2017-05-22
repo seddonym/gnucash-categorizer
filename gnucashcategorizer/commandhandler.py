@@ -55,14 +55,14 @@ class CommandHandler:
     MESSAGE_SUCCESS = 'SU'
     MESSAGE_WARNING = 'WA'
     MESSAGE_ERROR = 'ER'
-    
+
     MESSAGE_STYLE_MAP = {
         MESSAGE_SUCCESS: 'green',
         MESSAGE_WARNING: 'yellow',
         MESSAGE_ERROR: 'red',
     }
-    COLUMN_WIDTH = 40
-    
+    COLUMN_WIDTH = 35
+
     def run(self):
         """Main runner for the program.
         """
@@ -134,7 +134,7 @@ class CommandHandler:
             suggestions: List of suggestions.
         """
         self._print_message('\nSuggestions for uncategorized transactions:\n')
-        headings = ['Date', 'Description', 'Amount', 'Account']
+        headings = ['Date', 'Description', 'Amount', 'Old account', 'New account']
         self._print_message(self._format_cells(headings))
         self._print_horizontal_line(cell_count=len(headings))
         for suggestion in suggestions:
@@ -142,6 +142,7 @@ class CommandHandler:
                 suggestion.date.strftime('%d/%m/%Y'),
                 suggestion.description,
                 format_money(suggestion.amount, locale='en_GB'),
+                suggestion.old_account,
                 suggestion.new_account,
             )]
             self._print_message(self._format_cells(parts))
@@ -150,14 +151,14 @@ class CommandHandler:
         """Args:
             A list of strings.
         Returns:
-            A string with the strings evenly spaced into columns. 
+            A string with the strings evenly spaced into columns.
         """
         cell_format = '{: <%d}' % self.COLUMN_WIDTH
-        format_string = ' '.join([cell_format  * len(cells)])
+        format_string = ' '.join([cell_format * len(cells)])
         return format_string.format(*cells)
 
     def _print_horizontal_line(self, cell_count):
-        """Prints a horizontal line to span the number of cells provided. 
+        """Prints a horizontal line to span the number of cells provided.
         Args:
             How many cells.
         """
@@ -200,7 +201,7 @@ class CommandHandler:
             style: MESSAGE_INFO, MESSAGE_SUCCESS,
                    MESSAGE_WARNING or MESSAGE_ERROR.
         """
-        
+
         try:
             color = self.MESSAGE_STYLE_MAP[style]
             cmessage = colored(message, color)

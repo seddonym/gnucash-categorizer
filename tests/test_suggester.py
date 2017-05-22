@@ -132,3 +132,8 @@ class TestSuggestion(TestCase):
         suggestion = Suggestion(split=Mock(amount=sentinel.amount),
                                 new_account=Mock())
         assert suggestion.amount == sentinel.amount
+
+    def test_old_account(self):
+        suggestion = Suggestion(split=Mock(account=sentinel.old_account),
+                                new_account=Mock())
+        assert suggestion.old_account == sentinel.old_account

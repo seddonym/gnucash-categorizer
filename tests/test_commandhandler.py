@@ -97,10 +97,12 @@ class TestCommandHandler(TestCase):
             Mock(date=date(2017, 3, 19),
                  description='CASH 19 MAR',
                  amount=Money(30, GBP),
+                 old_account='Expenses:Unidentified',
                  new_account='Expenses:Groceries'),
             Mock(date=date(2017, 3, 21),
                  description='Monthly Salary',
                  amount=Money(1500, GBP),
+                 old_account='Imbalance:GBP',
                  new_account='Income:Salary'),
         ]
         with patch.object(self.command_handler, '_print_message') as mock_print:
@@ -114,11 +116,11 @@ class TestCommandHandler(TestCase):
                     self.command_handler._render_suggestions(suggestions)
 
         mock_format_cells.assert_has_calls([
-            call(['Date', 'Description', 'Amount', 'Account']),
-            call(['19/03/2017', 'CASH 19 MAR', '£30.00', 'Expenses:Groceries']),
-            call(['21/03/2017', 'Monthly Salary', '£1,500.00', 'Income:Salary']),
+            call(['Date', 'Description', 'Amount', 'Old account', 'New account']),
+            call(['19/03/2017', 'CASH 19 MAR', '£30.00', 'Expenses:Unidentified', 'Expenses:Groceries']),
+            call(['21/03/2017', 'Monthly Salary', '£1,500.00', 'Imbalance:GBP', 'Income:Salary']),
         ])
-        mock_print_hr.assert_called_once_with(cell_count=4)
+        mock_print_hr.assert_called_once_with(cell_count=5)
         mock_print.assert_has_calls([
             call('\nSuggestions for uncategorized transactions:\n'),
             call(sentinel.table_headings_string),
